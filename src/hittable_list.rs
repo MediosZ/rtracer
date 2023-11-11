@@ -1,14 +1,17 @@
-use crate::hittable::{HitRecord, Hittable};
+use crate::{
+    hittable::{HitRecord, Hittable},
+    interval::Interval,
+};
 
-pub struct HittableList<T: Hittable> {
-    objects: Vec<T>,
+pub struct HittableList {
+    objects: Vec<Box<dyn Hittable>>,
 }
 
-impl<T: Hittable> HittableList<T> {
+impl HittableList {
     pub fn new() -> Self {
         Self { objects: vec![] }
     }
-    pub fn add(&mut self, obj: T) {
+    pub fn add(&mut self, obj: Box<dyn Hittable>) {
         self.objects.push(obj);
     }
     pub fn clear(&mut self) {
@@ -16,17 +19,12 @@ impl<T: Hittable> HittableList<T> {
     }
 }
 
-impl<T: Hittable> Hittable for HittableList<T> {
-    fn hit(
-        &self,
-        ray: &crate::ray::Ray,
-        t_min: f64,
-        t_max: f64,
-    ) -> Option<crate::hittable::HitRecord> {
-        let mut close_so_far = t_max;
+impl Hittable for HittableList {
+    fn hit(&self, ray: &crate::ray::Ray, interval: Interval) -> Option<crate::hittable::HitRecord> {
+        let mut close_so_far = interval.max;
         let mut result: Option<HitRecord> = None;
         for object in &self.objects {
-            if let Some(record) = T::hit(&object, ray, t_min, close_so_far) {
+            if let Some(record) = object.hit(ray, Interval::new(interval.min, close_so_far)) {
                 close_so_far = record.t;
                 result = Some(record);
             }

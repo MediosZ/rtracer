@@ -1,15 +1,15 @@
 #![allow(dead_code)]
 use rtracer::color::{write_color, Color};
 use rtracer::hittable::Hittable;
+use rtracer::hittable_list::HittableList;
+use rtracer::interval::Interval;
 use rtracer::ray::Ray;
 use rtracer::sphere::Sphere;
 use rtracer::vec3::{Point3, Vec3};
+use rtracer::INF;
 
-fn ray_color(ray: &Ray) -> Color {
-    let sphere_center = Point3::new(0.0, 0.0, -1.0);
-
-    let sphere = Sphere::new(sphere_center, 0.5);
-    if let Some(record) = sphere.hit(ray, -100.0, 100.0) {
+fn ray_color(ray: &Ray, world: &HittableList) -> Color {
+    if let Some(record) = world.hit(ray, Interval::new(0.0, INF)) {
         0.5 * Color::new(
             record.normal.x() + 1.0,
             record.normal.y() + 1.0,
@@ -42,6 +42,11 @@ fn main() {
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as i32;
     let image_height = if image_height < 1 { 1 } else { image_height };
+
+    let mut world = HittableList::new();
+    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
+
     let focal_length = 1.0;
     let viewport_height = 2.0;
     let viewport_width = viewport_height * image_width as f64 / image_height as f64;
@@ -64,7 +69,7 @@ fn main() {
             let pixel_center = pixel00 + j as f64 * pixel_delta_u + i as f64 * pixel_detla_v;
             let ray_dir = pixel_center - camera_center;
             let ray = Ray::new(camera_center, ray_dir);
-            let color = ray_color(&ray);
+            let color = ray_color(&ray, &world);
             write_color(&color);
         }
     }

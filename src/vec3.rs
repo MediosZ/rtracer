@@ -221,6 +221,7 @@ impl ops::IndexMut<usize> for Vec3 {
 pub type Point3 = Vec3;
 
 mod tests {
+    #[allow(unused_imports)]
     use super::Vec3;
     #[test]
     fn add() {
