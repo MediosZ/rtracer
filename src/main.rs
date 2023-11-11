@@ -1,24 +1,40 @@
 #![allow(dead_code)]
 use rtracer::color::{write_color, Color};
+use rtracer::hittable::Hittable;
 use rtracer::ray::Ray;
+use rtracer::sphere::Sphere;
 use rtracer::vec3::{Point3, Vec3};
 
 fn ray_color(ray: &Ray) -> Color {
-    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Color::new(1.0, 0.0, 0.0);
-    }
-    let unit_dir = ray.dir().unit_vector();
-    let a = 0.5 * (unit_dir.y() + 1.0);
+    let sphere_center = Point3::new(0.0, 0.0, -1.0);
 
-    (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
+    let sphere = Sphere::new(sphere_center, 0.5);
+    if let Some(record) = sphere.hit(ray, -100.0, 100.0) {
+        0.5 * Color::new(
+            record.normal.x() + 1.0,
+            record.normal.y() + 1.0,
+            record.normal.z() + 1.0,
+        )
+    } else {
+        let unit_dir = ray.dir().unit_vector();
+        let a = 0.5 * (unit_dir.y() + 1.0);
+
+        (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
+    }
 }
 
-fn hit_sphere(center: &Point3, radius: f64, ray: &Ray) -> bool {
+fn hit_sphere(center: &Point3, radius: f64, ray: &Ray) -> f64 {
     let oc = ray.origin() - *center;
-    let a = ray.dir().dot(&ray.dir());
-    let b = 2.0 * oc.dot(&ray.dir());
-    let c = oc.dot(&oc) - radius.powi(2);
-    (b.powi(2) - 4.0 * a * c) >= 0.0
+    let a = ray.dir().length_squared();
+    let half_b = oc.dot(&ray.dir());
+    let c = oc.length_squared() - radius.powi(2);
+    let discriminant = half_b.powi(2) - a * c;
+
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (-half_b - discriminant.sqrt()) / a
+    }
 }
 
 fn main() {
@@ -47,7 +63,7 @@ fn main() {
         for j in 0..image_width {
             let pixel_center = pixel00 + j as f64 * pixel_delta_u + i as f64 * pixel_detla_v;
             let ray_dir = pixel_center - camera_center;
-            let ray = Ray::new(pixel_center, ray_dir);
+            let ray = Ray::new(camera_center, ray_dir);
             let color = ray_color(&ray);
             write_color(&color);
         }
