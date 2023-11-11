@@ -1,5 +1,7 @@
 use std::ops;
 
+use crate::{rand, rand_range};
+
 type Elem = [f64; 3];
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -36,11 +38,11 @@ impl Vec3 {
         self.length_squared().sqrt()
     }
 
-    pub fn dot(&self, rhs: &Vec3) -> f64 {
+    pub fn dot(&self, rhs: &Self) -> f64 {
         self[0] * rhs[0] + self[1] * rhs[1] + self[2] * rhs[2]
     }
 
-    pub fn cross(&self, rhs: &Vec3) -> Vec3 {
+    pub fn cross(&self, rhs: &Self) -> Self {
         Self {
             elem: [
                 self[1] * rhs[2] - self[2] * rhs[1],
@@ -50,13 +52,47 @@ impl Vec3 {
         }
     }
 
-    pub fn unit_vector(&self) -> Vec3 {
+    pub fn unit_vector(&self) -> Self {
         *self / self.length()
+    }
+
+    pub fn random() -> Self {
+        Self::new(rand(), rand(), rand())
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Self {
+        Self::new(
+            rand_range(min, max),
+            rand_range(min, max),
+            rand_range(min, max),
+        )
+    }
+
+    pub fn random_in_unit_sphere() -> Self {
+        loop {
+            let v = Self::random_range(-1.0, 1.0);
+            if v.length_squared() < 1.0 {
+                break v;
+            }
+        }
+    }
+
+    pub fn random_unit_vector() -> Self {
+        Self::random_in_unit_sphere().unit_vector()
+    }
+
+    pub fn random_on_hemisphere(normal: Self) -> Self {
+        let v = Self::random_unit_vector();
+        if v.dot(&normal) > 0.0 {
+            v
+        } else {
+            -v
+        }
     }
 }
 
 impl ops::Neg for Vec3 {
-    type Output = Vec3;
+    type Output = Self;
     fn neg(self) -> Self::Output {
         Self {
             elem: [-self[0], -self[1], -self[2]],
@@ -65,8 +101,8 @@ impl ops::Neg for Vec3 {
 }
 
 impl ops::Add<Vec3> for Vec3 {
-    type Output = Vec3;
-    fn add(self, rhs: Vec3) -> Self::Output {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
         Self {
             elem: [self[0] + rhs[0], self[1] + rhs[1], self[2] + rhs[2]],
         }
@@ -74,7 +110,7 @@ impl ops::Add<Vec3> for Vec3 {
 }
 
 impl ops::AddAssign<Vec3> for Vec3 {
-    fn add_assign(&mut self, rhs: Vec3) {
+    fn add_assign(&mut self, rhs: Self) {
         self[0] += rhs[0];
         self[1] += rhs[1];
         self[2] += rhs[2];
@@ -82,8 +118,8 @@ impl ops::AddAssign<Vec3> for Vec3 {
 }
 
 impl ops::Sub<Vec3> for Vec3 {
-    type Output = Vec3;
-    fn sub(self, rhs: Vec3) -> Self::Output {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self::Output {
         Self {
             elem: [self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2]],
         }
@@ -91,7 +127,7 @@ impl ops::Sub<Vec3> for Vec3 {
 }
 
 impl ops::SubAssign<Vec3> for Vec3 {
-    fn sub_assign(&mut self, rhs: Vec3) {
+    fn sub_assign(&mut self, rhs: Self) {
         self[0] -= rhs[0];
         self[1] -= rhs[1];
         self[2] -= rhs[2];

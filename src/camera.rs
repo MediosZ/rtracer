@@ -1,18 +1,24 @@
 use crate::{rand, write_color, Color, Hittable, HittableList, Interval, Point3, Ray, Vec3, INF};
 
 pub struct Camera {
-    image_width: i32,
-    image_height: i32,
+    image_width: usize,
+    image_height: usize,
     pixel00: Point3,
     center: Point3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
-    sample_per_pixel: i32,
+    sample_per_pixel: usize,
+    max_depth: usize,
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: f64, image_width: i32, sample_per_pixel: i32) -> Self {
-        let image_height = (image_width as f64 / aspect_ratio) as i32;
+    pub fn new(
+        aspect_ratio: f64,
+        image_width: usize,
+        sample_per_pixel: usize,
+        max_depth: usize,
+    ) -> Self {
+        let image_height = (image_width as f64 / aspect_ratio) as usize;
         let image_height = if image_height < 1 { 1 } else { image_height };
 
         let focal_length = 1.0;
@@ -34,6 +40,7 @@ impl Camera {
             pixel_delta_v,
             center,
             sample_per_pixel,
+            max_depth,
         }
     }
 
@@ -48,7 +55,7 @@ impl Camera {
                 let mut final_color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.sample_per_pixel {
                     let r = self.get_ray(i, j);
-                    let color = self.ray_color(&r, &world);
+                    let color = self.ray_color(&r, self.max_depth, &world);
                     final_color += color;
                 }
                 write_color(&final_color, self.sample_per_pixel);
@@ -57,7 +64,7 @@ impl Camera {
         eprintln!("DONE");
     }
 
-    fn get_ray(&self, i: i32, j: i32) -> Ray {
+    fn get_ray(&self, i: usize, j: usize) -> Ray {
         let pixel_center =
             self.pixel00 + j as f64 * self.pixel_delta_u + i as f64 * self.pixel_delta_v;
         let pixel_sample = pixel_center + self.sample_square();
@@ -69,9 +76,13 @@ impl Camera {
         (rand() - 0.5) * self.pixel_delta_u + (rand() - 0.5) * self.pixel_delta_v
     }
 
-    fn ray_color(&self, ray: &Ray, world: &HittableList) -> Color {
-        if let Some(record) = world.hit(ray, Interval::new(0.0, INF)) {
-            0.5 * (record.normal + Color::new(1.0, 1.0, 1.0))
+    fn ray_color(&self, ray: &Ray, depth: usize, world: &HittableList) -> Color {
+        if depth <= 0 {
+            return Color::new(0.0, 0.0, 0.0);
+        }
+        if let Some(record) = world.hit(ray, Interval::new(0.001, INF)) {
+            let direction = record.normal + Vec3::random_unit_vector();
+            0.5 * self.ray_color(&Ray::new(record.point, direction), depth - 1, world)
         } else {
             let unit_dir = ray.dir().unit_vector();
             let a = 0.5 * (unit_dir.y() + 1.0);
