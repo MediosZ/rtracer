@@ -29,7 +29,7 @@ impl Vec3 {
     }
 
     pub fn length_squared(&self) -> f64 {
-        self.elem.iter().map(|x| x.powf(2.0)).sum()
+        self.elem.iter().map(|x| x.powi(2)).sum()
     }
 
     pub fn length(&self) -> f64 {
@@ -124,6 +124,13 @@ macro_rules! impl_numeric_operations_for {
                 }
             }
         }
+        impl ops::AddAssign<$typ> for Vec3 {
+            fn add_assign(&mut self, rhs: $typ) {
+                self[0] += rhs;
+                self[1] += rhs;
+                self[2] += rhs;
+            }
+        }
         impl ops::Sub<$typ> for Vec3 {
             type Output = Vec3;
             fn sub(self, rhs: $typ) -> Self::Output {
@@ -148,6 +155,51 @@ macro_rules! impl_numeric_operations_for {
                 }
             }
         }
+        impl ops::SubAssign<$typ> for Vec3 {
+            fn sub_assign(&mut self, rhs: $typ) {
+                self[0] -= rhs;
+                self[1] -= rhs;
+                self[2] -= rhs;
+            }
+        }
+        impl ops::Mul<$typ> for Vec3 {
+            type Output = Self;
+            fn mul(self, rhs: $typ) -> Self::Output {
+                Self {
+                    elem: [self[0] * rhs, self[1] * rhs, self[2] * rhs],
+                }
+            }
+        }
+        impl ops::Mul<Vec3> for $typ {
+            type Output = Vec3;
+            fn mul(self, rhs: Vec3) -> Self::Output {
+                Self::Output {
+                    elem: [
+                        self as f64 * rhs[0],
+                        self as f64 * rhs[1],
+                        self as f64 * rhs[2],
+                    ],
+                }
+            }
+        }
+        impl ops::MulAssign<$typ> for Vec3 {
+            fn mul_assign(&mut self, rhs: $typ) {
+                self[0] *= rhs;
+                self[1] *= rhs;
+                self[2] *= rhs;
+            }
+        }
+        impl ops::Div<$typ> for Vec3 {
+            type Output = Self;
+            fn div(self, rhs: $typ) -> Self::Output {
+                self * (1.0 / rhs)
+            }
+        }
+        impl ops::DivAssign<$typ> for Vec3 {
+            fn div_assign(&mut self, rhs: $typ) {
+                *self *= 1.0 / rhs;
+            }
+        }
     };
 }
 
@@ -163,36 +215,6 @@ impl ops::Index<usize> for Vec3 {
 impl ops::IndexMut<usize> for Vec3 {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.elem[index]
-    }
-}
-
-impl ops::Mul<f64> for Vec3 {
-    type Output = Self;
-    fn mul(self, rhs: f64) -> Self::Output {
-        Self {
-            elem: [self[0] * rhs, self[1] * rhs, self[2] * rhs],
-        }
-    }
-}
-
-impl ops::MulAssign<f64> for Vec3 {
-    fn mul_assign(&mut self, rhs: f64) {
-        self[0] *= rhs;
-        self[1] *= rhs;
-        self[2] *= rhs;
-    }
-}
-
-impl ops::Div<f64> for Vec3 {
-    type Output = Self;
-    fn div(self, rhs: f64) -> Self::Output {
-        self * (1.0 / rhs)
-    }
-}
-
-impl ops::DivAssign<f64> for Vec3 {
-    fn div_assign(&mut self, rhs: f64) {
-        *self *= 1.0 / rhs;
     }
 }
 
