@@ -1,4 +1,4 @@
-use crate::{write_color, Color, Hittable, HittableList, Interval, Point3, Ray, Vec3, INF};
+use crate::{rand, write_color, Color, Hittable, HittableList, Interval, Point3, Ray, Vec3, INF};
 
 pub struct Camera {
     image_width: i32,
@@ -7,10 +7,11 @@ pub struct Camera {
     center: Point3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
+    sample_per_pixel: i32,
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: f64, image_width: i32) -> Self {
+    pub fn new(aspect_ratio: f64, image_width: i32, sample_per_pixel: i32) -> Self {
         let image_height = (image_width as f64 / aspect_ratio) as i32;
         let image_height = if image_height < 1 { 1 } else { image_height };
 
@@ -25,7 +26,6 @@ impl Camera {
         let viewport_upper_left =
             center - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
         let pixel00 = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
-
         Camera {
             image_height,
             image_width,
@@ -33,8 +33,10 @@ impl Camera {
             pixel_delta_u,
             pixel_delta_v,
             center,
+            sample_per_pixel,
         }
     }
+
     pub fn render(&self, world: &HittableList) {
         println!("P3");
         println!("{} {}", self.image_width, self.image_height);
@@ -43,15 +45,28 @@ impl Camera {
         for i in 0..self.image_height {
             // eprintln!("Lines remaining: {}", height - i);
             for j in 0..self.image_width {
-                let pixel_center =
-                    self.pixel00 + j as f64 * self.pixel_delta_u + i as f64 * self.pixel_delta_v;
-                let ray_dir = pixel_center - self.center;
-                let ray = Ray::new(self.center, ray_dir);
-                let color = self.ray_color(&ray, &world);
-                write_color(&color);
+                let mut final_color = Color::new(0.0, 0.0, 0.0);
+                for _ in 0..self.sample_per_pixel {
+                    let r = self.get_ray(i, j);
+                    let color = self.ray_color(&r, &world);
+                    final_color += color;
+                }
+                write_color(&final_color, self.sample_per_pixel);
             }
         }
         eprintln!("DONE");
+    }
+
+    fn get_ray(&self, i: i32, j: i32) -> Ray {
+        let pixel_center =
+            self.pixel00 + j as f64 * self.pixel_delta_u + i as f64 * self.pixel_delta_v;
+        let pixel_sample = pixel_center + self.sample_square();
+        let ray_dir = pixel_sample - self.center;
+        Ray::new(self.center, ray_dir)
+    }
+
+    fn sample_square(&self) -> Vec3 {
+        (rand() - 0.5) * self.pixel_delta_u + (rand() - 0.5) * self.pixel_delta_v
     }
 
     fn ray_color(&self, ray: &Ray, world: &HittableList) -> Color {

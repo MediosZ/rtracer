@@ -13,6 +13,14 @@ pub fn deg2rad(deg: f64) -> f64 {
     deg / 180.0 * PI
 }
 
+pub fn rand() -> f64 {
+    rand::random::<f64>()
+}
+
+pub fn rand_range(min: f64, max: f64) -> f64 {
+    min + (max - min) * rand()
+}
+
 pub use camera::Camera;
 pub use color::{write_color, Color};
 pub use hittable::{HitRecord, Hittable};
