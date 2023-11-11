@@ -1,8 +1,4 @@
-use crate::{
-    hittable::{HitRecord, Hittable},
-    interval::Interval,
-    vec3::Point3,
-};
+use crate::{HitRecord, Hittable, Interval, Point3};
 
 pub struct Sphere {
     center: Point3,

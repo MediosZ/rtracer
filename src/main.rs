@@ -1,12 +1,7 @@
 #![allow(dead_code)]
-use rtracer::color::{write_color, Color};
-use rtracer::hittable::Hittable;
-use rtracer::hittable_list::HittableList;
-use rtracer::interval::Interval;
-use rtracer::ray::Ray;
-use rtracer::sphere::Sphere;
-use rtracer::vec3::{Point3, Vec3};
-use rtracer::INF;
+use rtracer::{
+    write_color, Color, Hittable, HittableList, Interval, Point3, Ray, Sphere, Vec3, INF,
+};
 
 fn ray_color(ray: &Ray, world: &HittableList) -> Color {
     if let Some(record) = world.hit(ray, Interval::new(0.0, INF)) {

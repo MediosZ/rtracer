@@ -1,7 +1,4 @@
-use crate::{
-    hittable::{HitRecord, Hittable},
-    interval::Interval,
-};
+use crate::{HitRecord, Hittable, Interval};
 
 pub struct HittableList {
     objects: Vec<Box<dyn Hittable>>,

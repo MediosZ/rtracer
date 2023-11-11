@@ -1,8 +1,4 @@
-use crate::{
-    interval::Interval,
-    ray::Ray,
-    vec3::{Point3, Vec3},
-};
+use crate::{Interval, Point3, Ray, Vec3};
 
 pub struct HitRecord {
     pub point: Point3,
