@@ -81,13 +81,22 @@ impl Vec3 {
         Self::random_in_unit_sphere().unit_vector()
     }
 
-    pub fn random_on_hemisphere(normal: Self) -> Self {
+    pub fn random_on_hemisphere(normal: &Self) -> Self {
         let v = Self::random_unit_vector();
-        if v.dot(&normal) > 0.0 {
+        if v.dot(normal) > 0.0 {
             v
         } else {
             -v
         }
+    }
+
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        (self[0].abs() < s) && (self[1].abs() < s) && (self[2].abs() < s)
+    }
+
+    pub fn reflect(&self, normal: &Self) -> Self {
+        *self - 2.0 * self.dot(normal) * *normal
     }
 }
 
@@ -122,6 +131,15 @@ impl ops::Sub<Vec3> for Vec3 {
     fn sub(self, rhs: Self) -> Self::Output {
         Self {
             elem: [self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2]],
+        }
+    }
+}
+
+impl ops::Mul<Vec3> for Vec3 {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self::Output {
+        Self {
+            elem: [self[0] * rhs[0], self[1] * rhs[1], self[2] * rhs[2]],
         }
     }
 }
