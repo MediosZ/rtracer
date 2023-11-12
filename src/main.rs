@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use rtracer::{Camera, Color, Dielectric, HittableList, Lambertian, Metal, Point3, Sphere};
+use rtracer::{Camera, Color, Dielectric, HittableList, Lambertian, Metal, Point3, Sphere, Vec3};
 
 fn main() {
     let mut world = HittableList::new();
@@ -40,6 +40,21 @@ fn main() {
 
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
-    let cam = Camera::new(aspect_ratio, image_width, 50, 10);
+    let fov = 20.0;
+    let max_depth = 10;
+    let sample_per_pixel = 50;
+    let lookfrom = Point3::new(-2.0, 2.0, 1.0);
+    let lookat = Point3::new(0.0, 0.0, -1.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let cam = Camera::new(
+        aspect_ratio,
+        image_width,
+        lookfrom,
+        lookat,
+        vup,
+        sample_per_pixel,
+        max_depth,
+        fov,
+    );
     cam.render(&world);
 }
