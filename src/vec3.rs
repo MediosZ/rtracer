@@ -105,6 +105,15 @@ impl Vec3 {
         let r_out_parallel = (1.0 - r_out_perp.length_squared()).abs().sqrt().neg() * *normal;
         r_out_perp + r_out_parallel
     }
+
+    pub fn random_in_unit_disk() -> Self {
+        loop {
+            let p = Self::new(rand_range(-1.0, 1.0), rand_range(-1.0, 1.0), 0.0);
+            if p.length_squared() < 1.0 {
+                break p;
+            }
+        }
+    }
 }
 
 impl ops::Neg for Vec3 {

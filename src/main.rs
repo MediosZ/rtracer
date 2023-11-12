@@ -46,6 +46,8 @@ fn main() {
     let lookfrom = Point3::new(-2.0, 2.0, 1.0);
     let lookat = Point3::new(0.0, 0.0, -1.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
+    let defocus_angle = 10.0;
+    let focus_dist = 3.4;
     let cam = Camera::new(
         aspect_ratio,
         image_width,
@@ -55,6 +57,8 @@ fn main() {
         sample_per_pixel,
         max_depth,
         fov,
+        defocus_angle,
+        focus_dist,
     );
     cam.render(&world);
 }
