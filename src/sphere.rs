@@ -46,6 +46,14 @@ impl Sphere {
     fn sphere_center(&self, time: f64) -> Point3 {
         self.center + self.center_vec * time
     }
+
+    fn get_uv(&self, point: Point3) -> (f64, f64) {
+        let theta = (-point.y()).acos();
+        let phi = (-point.z()).atan2(point.x()) + std::f64::consts::PI;
+        let u = phi / (2.0 * std::f64::consts::PI);
+        let v = theta / std::f64::consts::PI;
+        (u, v)
+    }
 }
 
 impl Hittable for Sphere {
@@ -72,7 +80,8 @@ impl Hittable for Sphere {
         }
         let point = ray.at(t);
         let normal = (point - self.center) / self.radius;
-        Some(HitRecord::new(&ray, point, normal, t, self.mat.clone()))
+        let (u, v) = self.get_uv(normal);
+        Some(HitRecord::new(&ray, point, normal, t, self.mat.clone(), u, v))
     }
 
     fn bounding_box(&self) -> Aabb {

@@ -1,13 +1,39 @@
 #![allow(dead_code)]
 use rtracer::{
-    rand, rand_range, Camera, Color, Dielectric, HittableList, Lambertian, Metal, Point3, Sphere, BVHNode,
-    Vec3,
+    rand, rand_range, texture::ImageTexture, BVHNode, Camera, CheckerTexture, Color, Dielectric, HittableList, Lambertian, Metal, Point3, Sphere, Vec3
 };
 use std::rc::Rc;
 
-fn main() {
+fn two_spheres() -> HittableList {
     let mut world = HittableList::new();
-    let mat_ground = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let checker = CheckerTexture::new_with_color(
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+        0.32,
+    );
+    let mat_ground = Rc::new(Lambertian::new(Box::new(checker)));
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, -10.0, 0.0), 10.0, mat_ground.clone())));
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, 10.0, 0.0), 10.0, mat_ground)));
+
+    world
+
+}
+
+fn earth() -> HittableList {
+    let mut world = HittableList::new();
+    let earth_texture = ImageTexture::new("earthmap.jpg");
+    let earth_surface = Rc::new(Lambertian::new(Box::new(earth_texture)));
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, 0.0, 0.0), 2.0, earth_surface)));
+    world
+}
+
+fn random_spheres() -> HittableList {
+    let mut world = HittableList::new();
+    let mat_ground = Rc::new(Lambertian::new(Box::new(CheckerTexture::new_with_color(
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+        0.32
+    ))));
 
     world.add(Rc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
@@ -21,7 +47,7 @@ fn main() {
             let center = Point3::new(i as f64 + 0.9 * rand(), 0.2, j as f64 + 0.9 * rand());
             if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 if choose_mat < 0.8 {
-                    let mat = Rc::new(Lambertian::new(Color::random() * Color::random()));
+                    let mat = Rc::new(Lambertian::new_from_color(Color::random() * Color::random()));
                     let center2 = center + Vec3::new(0.0, rand_range(0.0, 0.5), 0.0);
                     world.add(Rc::new(Sphere::new_moving(center, center2, 0.2, mat)));
                 } else if choose_mat < 0.95 {
@@ -47,7 +73,7 @@ fn main() {
         mat_1,
     )));
 
-    let mat_2: Rc<Lambertian> = Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let mat_2: Rc<Lambertian> = Rc::new(Lambertian::new_from_color(Color::new(0.4, 0.2, 0.1)));
     world.add(Rc::new(Sphere::new(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
@@ -61,8 +87,10 @@ fn main() {
         mat_3,
     )));
 
-    let world = HittableList::new_from_node(Rc::new(BVHNode::new(world.into())));
+    HittableList::new_from_node(Rc::new(BVHNode::new(world.into())))
+}
 
+fn setup_camera() -> Camera {
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
     let fov = 20.0;
@@ -73,7 +101,7 @@ fn main() {
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let defocus_angle = 0.6;
     let focus_dist = 10.0;
-    let cam = Camera::new(
+    Camera::new(
         aspect_ratio,
         image_width,
         lookfrom,
@@ -84,6 +112,14 @@ fn main() {
         fov,
         defocus_angle,
         focus_dist,
-    );
+    )
+
+}
+
+fn main() {
+    let cam = setup_camera();
+    // let world = random_spheres();
+    // let world = two_spheres();
+    let world = earth();
     cam.render(&world);
 }

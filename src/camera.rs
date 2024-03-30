@@ -91,7 +91,8 @@ impl Camera {
         println!("255");
 
         for i in 0..self.image_height {
-            eprintln!("Lines remaining: {}", self.image_height - i);
+            eprint!("Lines remaining: {:>5}", self.image_height - i);
+            eprint!("\r");
             for j in 0..self.image_width {
                 let mut final_color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.sample_per_pixel {

@@ -1,18 +1,24 @@
 use std::ops::Neg;
 
-use crate::{rand, Color, HitRecord, Ray, Vec3};
+use crate::{rand, Color, HitRecord, Ray, SolidColor, Texture, Vec3};
 
 pub trait Material {
     fn scatter(&self, ray: &Ray, record: &HitRecord) -> Option<(Color, Ray)>;
 }
 
 pub struct Lambertian {
-    albedo: Color,
+    albedo: Box<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Color) -> Self {
+    pub fn new(albedo: Box<dyn Texture>) -> Self {
         Self { albedo }
+    }
+
+    pub fn new_from_color(color: Color) -> Self {
+        Self {
+            albedo: Box::new(SolidColor::new(color)),
+        }
     }
 }
 
@@ -22,7 +28,7 @@ impl Material for Lambertian {
         if scatter_direction.near_zero() {
             scatter_direction = record.normal;
         }
-        Some((self.albedo, Ray::new_with_time(record.point, scatter_direction, ray.time())))
+        Some((self.albedo.value(record.u, record.v, &record.point), Ray::new_with_time(record.point, scatter_direction, ray.time())))
     }
 }
 
