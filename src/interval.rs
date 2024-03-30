@@ -1,5 +1,6 @@
 use crate::INF;
 
+#[derive(Debug, Default, Clone)]
 pub struct Interval {
     pub min: f64,
     pub max: f64,
@@ -11,6 +12,14 @@ impl Interval {
     pub fn new(min: f64, max: f64) -> Self {
         Self { min, max }
     }
+
+    pub fn new_from_intervals(a: Interval, b: Interval) -> Self {
+        Self {
+            min: f64::min(a.min, b.min),
+            max: f64::max(a.max, b.max),
+        }
+    }
+
     pub fn empty() -> Self {
         Self {
             min: INF,
@@ -38,6 +47,18 @@ impl Interval {
             self.max
         } else {
             x
+        }
+    }
+
+    pub fn size(&self) -> f64 {
+        self.max - self.min
+    }
+
+    pub fn expand(&self, delta: f64) -> Self {
+        let padding = delta / 2.0;
+        Self {
+            min: self.min - padding,
+            max: self.max + padding,
         }
     }
 }

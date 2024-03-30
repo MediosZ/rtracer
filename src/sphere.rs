@@ -1,25 +1,61 @@
-use crate::{HitRecord, Hittable, Interval, Material, Point3};
+use crate::{Aabb, HitRecord, Hittable, Interval, Material, Point3, Vec3};
 use std::rc::Rc;
 
 pub struct Sphere {
     center: Point3,
     radius: f64,
-    mat: Rc<Box<dyn Material>>,
+    mat: Rc<Rc<dyn Material>>,
+    center_vec: Vec3,
+    is_moving: bool,
+    bbox: Aabb,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, mat: Box<dyn Material>) -> Self {
+    pub fn new(center: Point3, radius: f64, mat: Rc<dyn Material>) -> Self {
+        let rvec = Vec3::new(radius, radius, radius);
+        let bbox = Aabb::new_from_points(center - rvec, center + rvec);
         Self {
             center,
             radius,
             mat: Rc::new(mat),
+            center_vec: Vec3::zero(),
+            is_moving: false,
+            bbox
         }
+    }
+
+    pub fn new_moving(
+        center: Point3,
+        center2: Point3,
+        radius: f64,
+        mat: Rc<dyn Material>,
+    ) -> Self {
+        let rvec = Vec3::new(radius, radius, radius);
+        let box1 = Aabb::new_from_points(center - rvec, center + rvec);
+        let box2 = Aabb::new_from_points(center2 - rvec, center2 + rvec);
+        let bbox = Aabb::new_from_aabb(box1, box2);
+        Self {
+            center,
+            radius,
+            mat: Rc::new(mat),
+            center_vec: center2 - center,
+            is_moving: true,
+            bbox
+        }
+    }
+    fn sphere_center(&self, time: f64) -> Point3 {
+        self.center + self.center_vec * time
     }
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &crate::ray::Ray, interval: Interval) -> Option<HitRecord> {
-        let oc = ray.origin() - self.center;
+    fn hit(&self, ray: &crate::ray::Ray, interval: &Interval) -> Option<HitRecord> {
+        let center = if self.is_moving {
+            self.sphere_center(ray.time())
+        } else {
+            self.center
+        };
+        let oc = ray.origin() - center;
         let a = ray.dir().length_squared();
         let half_b = oc.dot(&ray.dir());
         let c = oc.length_squared() - self.radius.powi(2);
@@ -37,5 +73,9 @@ impl Hittable for Sphere {
         let point = ray.at(t);
         let normal = (point - self.center) / self.radius;
         Some(HitRecord::new(&ray, point, normal, t, self.mat.clone()))
+    }
+
+    fn bounding_box(&self) -> Aabb {
+        self.bbox.clone()
     }
 }

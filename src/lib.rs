@@ -7,6 +7,8 @@ pub mod material;
 pub mod ray;
 pub mod sphere;
 pub mod vec3;
+pub mod aabb;
+pub mod bvh;
 pub const INF: f64 = std::f64::INFINITY;
 pub const PI: f64 = std::f64::consts::PI;
 
@@ -22,6 +24,10 @@ pub fn rand_range(min: f64, max: f64) -> f64 {
     min + (max - min) * rand()
 }
 
+pub fn rand_i32(min: i32, max: i32) -> i32 {
+    rand::random::<i32>() % (max - min) + min
+}
+
 pub use camera::Camera;
 pub use color::{write_color, Color};
 pub use hittable::{HitRecord, Hittable};
@@ -31,3 +37,5 @@ pub use material::{Dielectric, Lambertian, Material, Metal};
 pub use ray::Ray;
 pub use sphere::Sphere;
 pub use vec3::{Point3, Vec3};
+pub use aabb::Aabb;
+pub use bvh::BVHNode;

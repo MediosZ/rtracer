@@ -1,6 +1,8 @@
 #![allow(dead_code)]
+#![allow(unused_imports)]
 use crate::{
-    deg2rad, rand, write_color, Color, Hittable, HittableList, Interval, Point3, Ray, Vec3, INF,
+    deg2rad, rand, ray, write_color, Color, Hittable, HittableList, Interval, Point3, Ray, Vec3,
+    INF,
 };
 
 pub struct Camera {
@@ -89,7 +91,7 @@ impl Camera {
         println!("255");
 
         for i in 0..self.image_height {
-            // eprintln!("Lines remaining: {}", height - i);
+            eprintln!("Lines remaining: {}", self.image_height - i);
             for j in 0..self.image_width {
                 let mut final_color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.sample_per_pixel {
@@ -113,7 +115,8 @@ impl Camera {
             self.defocus_disk_sample()
         };
         let ray_dir = pixel_sample - ray_origin;
-        Ray::new(ray_origin, ray_dir)
+        let ray_time = rand();
+        Ray::new_with_time(ray_origin, ray_dir, ray_time)
     }
 
     fn defocus_disk_sample(&self) -> Point3 {
@@ -129,7 +132,7 @@ impl Camera {
         if depth <= 0 {
             return Color::new(0.0, 0.0, 0.0);
         }
-        if let Some(record) = world.hit(ray, Interval::new(0.001, INF)) {
+        if let Some(record) = world.hit(ray, &Interval::new(0.001, INF)) {
             if let Some((attenuation, scattered)) = record.mat.scatter(ray, &record) {
                 attenuation * self.ray_color(&scattered, depth - 1, world)
             } else {
