@@ -4,7 +4,7 @@ use crate::{rand, rand_range};
 
 type Elem = [f64; 3];
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Vec3 {
     elem: Elem,
 }

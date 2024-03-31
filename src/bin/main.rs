@@ -1,8 +1,16 @@
 #![allow(dead_code)]
 use rtracer::{
-    rand, rand_range, texture::ImageTexture, BVHNode, Camera, CheckerTexture, Color, Dielectric, HittableList, Lambertian, Metal, Point3, Sphere, Vec3
+    rand, rand_range, texture::ImageTexture, BVHNode, Camera, CheckerTexture, Color, Dielectric, HittableList, Lambertian, Metal, NoiseTexture, Point3, Sphere, Vec3
 };
 use std::rc::Rc;
+
+fn two_perlin_spheres() -> HittableList {
+    let mut world = HittableList::new();
+    let perlin_surface = Rc::new(Lambertian::new(Box::new(NoiseTexture::new(4.0))));
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, perlin_surface.clone())));
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, 2.0, 0.0), 2.0, perlin_surface)));
+    world
+}
 
 fn two_spheres() -> HittableList {
     let mut world = HittableList::new();
@@ -120,6 +128,7 @@ fn main() {
     let cam = setup_camera();
     // let world = random_spheres();
     // let world = two_spheres();
-    let world = earth();
+    // let world = earth();
+    let world = two_perlin_spheres();
     cam.render(&world);
 }
