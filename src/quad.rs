@@ -9,7 +9,7 @@ pub struct Quad {
     bbox: Aabb,
     normal: Vec3,
     d: f64,
-    w: Vec3
+    w: Vec3,
 }
 
 impl Quad {
@@ -19,12 +19,25 @@ impl Quad {
         let d = normal.dot(&q);
         let w = n / n.dot(&n);
         let bbox = Aabb::new_from_points(q, q + u + v).pad();
-        Self { q, u, v, mat, bbox, normal, d, w }
+        Self {
+            q,
+            u,
+            v,
+            mat,
+            bbox,
+            normal,
+            d,
+            w,
+        }
     }
 }
 
 impl Hittable for Quad {
-    fn hit(&self, ray: &crate::ray::Ray, interval: &crate::Interval) -> Option<crate::hittable::HitRecord> {
+    fn hit(
+        &self,
+        ray: &crate::ray::Ray,
+        interval: &crate::Interval,
+    ) -> Option<crate::hittable::HitRecord> {
         let denom = self.normal.dot(&ray.dir());
         if denom.abs() < 1e-8 {
             return None;
@@ -39,7 +52,7 @@ impl Hittable for Quad {
         let alpha = self.w.dot(&planar_hitpt_vector.cross(&self.v));
         let beta = self.w.dot(&self.u.cross(&planar_hitpt_vector));
 
-        if alpha < 0.0 || beta < 0.0 || alpha > 1.0 || beta > 1.0{
+        if alpha < 0.0 || beta < 0.0 || alpha > 1.0 || beta > 1.0 {
             return None;
         };
 
@@ -52,7 +65,6 @@ impl Hittable for Quad {
             alpha,
             beta,
         ))
-
     }
     fn bounding_box(&self) -> Aabb {
         self.bbox.clone()

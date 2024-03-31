@@ -4,6 +4,9 @@ use crate::{rand, Color, HitRecord, Ray, SolidColor, Texture, Vec3};
 
 pub trait Material {
     fn scatter(&self, ray: &Ray, record: &HitRecord) -> Option<(Color, Ray)>;
+    fn emiited(&self, _u: f64, _v: f64, _point: &Vec3) -> Color {
+        Color::new(0.0, 0.0, 0.0)
+    }
 }
 
 pub struct Lambertian {
@@ -28,7 +31,10 @@ impl Material for Lambertian {
         if scatter_direction.near_zero() {
             scatter_direction = record.normal;
         }
-        Some((self.albedo.value(record.u, record.v, &record.point), Ray::new_with_time(record.point, scatter_direction, ray.time())))
+        Some((
+            self.albedo.value(record.u, record.v, &record.point),
+            Ray::new_with_time(record.point, scatter_direction, ray.time()),
+        ))
     }
 }
 
@@ -49,7 +55,7 @@ impl Material for Metal {
         let scattered = Ray::new_with_time(
             record.point,
             reflected + self.fuzz * Vec3::random_unit_vector(),
-            ray.time()
+            ray.time(),
         );
         if scattered.dir().dot(&record.normal) > 0.0 {
             Some((self.albedo, scattered))
@@ -99,9 +105,61 @@ impl Material for Dielectric {
                 Color::new(1.0, 1.0, 1.0),
                 Ray::new_with_time(
                     record.point,
-                    unit_dir.refract(&record.normal, refraction_ratio), ray.time()
+                    unit_dir.refract(&record.normal, refraction_ratio),
+                    ray.time(),
                 ),
             ))
         }
+    }
+}
+
+pub struct DiffuseLight {
+    emit: Box<dyn Texture>,
+}
+
+impl DiffuseLight {
+    pub fn new(emit: Box<dyn Texture>) -> Self {
+        Self { emit }
+    }
+
+    pub fn new_from_color(color: Color) -> Self {
+        Self {
+            emit: Box::new(SolidColor::new(color)),
+        }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn scatter(&self, _ray: &Ray, _record: &HitRecord) -> Option<(Color, Ray)> {
+        None
+    }
+
+    fn emiited(&self, u: f64, v: f64, point: &Vec3) -> Color {
+        self.emit.value(u, v, point)
+    }
+}
+
+pub struct Isotropic {
+    albedo: Box<dyn Texture>,
+}
+
+impl Isotropic {
+    pub fn new(albedo: Box<dyn Texture>) -> Self {
+        Self { albedo }
+    }
+
+    pub fn new_from_color(color: Color) -> Self {
+        Self {
+            albedo: Box::new(SolidColor::new(color)),
+        }
+    }
+}
+
+impl Material for Isotropic {
+    fn scatter(&self, ray: &Ray, record: &HitRecord) -> Option<(Color, Ray)> {
+        Some((
+            self.albedo.value(record.u, record.v, &record.point),
+            Ray::new_with_time(record.point, Vec3::random_unit_vector(), ray.time()),
+        ))
     }
 }

@@ -25,6 +25,7 @@ pub struct Camera {
     focus_dist: f64,
     defocus_disk_u: Vec3,
     defocus_disk_v: Vec3,
+    background: Color,
 }
 
 impl Camera {
@@ -39,6 +40,7 @@ impl Camera {
         fov: f64,
         defocus_angle: f64,
         focus_dist: f64,
+        background: Color,
     ) -> Self {
         let image_height = (image_width as f64 / aspect_ratio) as usize;
         let image_height = if image_height < 1 { 1 } else { image_height };
@@ -82,6 +84,7 @@ impl Camera {
             focus_dist,
             defocus_disk_u,
             defocus_disk_v,
+            background,
         }
     }
 
@@ -134,17 +137,16 @@ impl Camera {
             return Color::new(0.0, 0.0, 0.0);
         }
         if let Some(record) = world.hit(ray, &Interval::new(0.001, INF)) {
+            let color_from_emission = record.mat.emiited(record.u, record.v, &record.point);
             if let Some((attenuation, scattered)) = record.mat.scatter(ray, &record) {
-                attenuation * self.ray_color(&scattered, depth - 1, world)
+                color_from_emission + attenuation * self.ray_color(&scattered, depth - 1, world)
             } else {
-                Color::new(0.0, 0.0, 0.0)
+                color_from_emission
             }
             // let direction = record.normal + Vec3::random_unit_vector();
             // 0.5 * self.ray_color(&Ray::new(record.point, direction), depth - 1, world)
         } else {
-            let unit_dir = ray.dir().unit_vector();
-            let a = 0.5 * (unit_dir.y() + 1.0);
-            (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
+            self.background
         }
     }
 }

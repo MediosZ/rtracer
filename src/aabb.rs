@@ -1,10 +1,12 @@
-use crate::{Interval, Point3, Ray};
+use std::ops::Add;
+
+use crate::{Interval, Point3, Ray, Vec3};
 
 #[derive(Debug, Default, Clone)]
 pub struct Aabb {
-    x: Interval,
-    y: Interval,
-    z: Interval,
+    pub x: Interval,
+    pub y: Interval,
+    pub z: Interval,
 }
 
 impl Aabb {
@@ -38,14 +40,26 @@ impl Aabb {
 
     pub fn pad(&self) -> Self {
         let delta = 0.0001;
-        let x = if self.x.size() >= delta {self.x.clone()} else {self.x.expand(delta)};
-        let y = if self.y.size() >= delta {self.y.clone()} else {self.y.expand(delta)};
-        let z = if self.z.size() >= delta {self.z.clone()} else {self.z.expand(delta)};
-        Self {x, y, z}
+        let x = if self.x.size() >= delta {
+            self.x.clone()
+        } else {
+            self.x.expand(delta)
+        };
+        let y = if self.y.size() >= delta {
+            self.y.clone()
+        } else {
+            self.y.expand(delta)
+        };
+        let z = if self.z.size() >= delta {
+            self.z.clone()
+        } else {
+            self.z.expand(delta)
+        };
+        Self { x, y, z }
     }
 
     pub fn hit(&self, ray: &Ray, interval: &Interval) -> bool {
-         let mut t_min = interval.min;
+        let mut t_min = interval.min;
         let mut t_max = interval.max;
         for i in 0..3 {
             let inv_d = 1.0 / ray.dir()[i];
@@ -64,5 +78,33 @@ impl Aabb {
         }
         true
     }
+}
 
+impl Add<Vec3> for Aabb {
+    type Output = Aabb;
+    fn add(self, rhs: Vec3) -> Self::Output {
+        Aabb::new(
+            Interval::new(self.x.min + rhs.x(), self.x.max + rhs.x()),
+            Interval::new(self.y.min + rhs.y(), self.y.max + rhs.y()),
+            Interval::new(self.z.min + rhs.z(), self.z.max + rhs.z()),
+        )
+    }
+}
+
+impl Add<&Vec3> for &Aabb {
+    type Output = Aabb;
+    fn add(self, rhs: &Vec3) -> Self::Output {
+        Aabb::new(
+            Interval::new(self.x.min + rhs.x(), self.x.max + rhs.x()),
+            Interval::new(self.y.min + rhs.y(), self.y.max + rhs.y()),
+            Interval::new(self.z.min + rhs.z(), self.z.max + rhs.z()),
+        )
+    }
+}
+
+impl Add<&Aabb> for &Vec3 {
+    type Output = Aabb;
+    fn add(self, rhs: &Aabb) -> Self::Output {
+        rhs + self
+    }
 }

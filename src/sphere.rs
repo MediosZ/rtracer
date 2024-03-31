@@ -20,16 +20,11 @@ impl Sphere {
             mat,
             center_vec: Vec3::zero(),
             is_moving: false,
-            bbox
+            bbox,
         }
     }
 
-    pub fn new_moving(
-        center: Point3,
-        center2: Point3,
-        radius: f64,
-        mat: Rc<dyn Material>,
-    ) -> Self {
+    pub fn new_moving(center: Point3, center2: Point3, radius: f64, mat: Rc<dyn Material>) -> Self {
         let rvec = Vec3::new(radius, radius, radius);
         let box1 = Aabb::new_from_points(center - rvec, center + rvec);
         let box2 = Aabb::new_from_points(center2 - rvec, center2 + rvec);
@@ -40,7 +35,7 @@ impl Sphere {
             mat,
             center_vec: center2 - center,
             is_moving: true,
-            bbox
+            bbox,
         }
     }
     fn sphere_center(&self, time: f64) -> Point3 {
@@ -81,7 +76,15 @@ impl Hittable for Sphere {
         let point = ray.at(t);
         let normal = (point - self.center) / self.radius;
         let (u, v) = self.get_uv(normal);
-        Some(HitRecord::new(ray, point, normal, t, self.mat.clone(), u, v))
+        Some(HitRecord::new(
+            ray,
+            point,
+            normal,
+            t,
+            self.mat.clone(),
+            u,
+            v,
+        ))
     }
 
     fn bounding_box(&self) -> Aabb {

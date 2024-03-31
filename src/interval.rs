@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 use crate::INF;
 
 #[derive(Debug, Default, Clone)]
@@ -60,5 +62,24 @@ impl Interval {
             min: self.min - padding,
             max: self.max + padding,
         }
+    }
+}
+
+impl Add<f64> for Interval {
+    type Output = Self;
+
+    fn add(self, rhs: f64) -> Self::Output {
+        Self {
+            min: self.min + rhs,
+            max: self.max + rhs,
+        }
+    }
+}
+
+impl Add<Interval> for f64 {
+    type Output = Interval;
+
+    fn add(self, rhs: Interval) -> Self::Output {
+        rhs + self
     }
 }

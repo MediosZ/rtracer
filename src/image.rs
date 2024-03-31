@@ -12,7 +12,11 @@ impl Image {
         let width = img.width();
         let height = img.height();
         let data = img.into_rgb8().into_raw();
-        Self { width, height, data }
+        Self {
+            width,
+            height,
+            data,
+        }
     }
 
     fn clamp(&self, x: u32, min: u32, max: u32) -> u32 {

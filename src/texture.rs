@@ -1,5 +1,4 @@
-use crate::{Color, Image, Interval, Point3, Perlin};
-
+use crate::{Color, Image, Interval, Perlin, Point3};
 
 pub trait Texture {
     fn value(&self, u: f64, v: f64, p: &Point3) -> Color;
@@ -66,14 +65,13 @@ impl Texture for CheckerTexture {
 }
 
 pub struct ImageTexture {
-    image: Image
+    image: Image,
 }
-
 
 impl ImageTexture {
     pub fn new(image_path: &str) -> Self {
         Self {
-            image: Image::new(image_path)
+            image: Image::new(image_path),
         }
     }
 }
@@ -106,7 +104,7 @@ impl NoiseTexture {
     pub fn new(scale: f64) -> Self {
         Self {
             noise: Perlin::new(),
-            scale
+            scale,
         }
     }
 }

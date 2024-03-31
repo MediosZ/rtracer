@@ -1,11 +1,10 @@
-use std::rc::Rc;
 use crate::{rand_i32, Aabb, HitRecord, Hittable, Interval, Ray};
+use std::rc::Rc;
 pub struct BVHNode {
     left: Rc<dyn Hittable>,
     right: Rc<dyn Hittable>,
     bbox: Aabb,
 }
-
 
 impl Hittable for BVHNode {
     fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
@@ -36,11 +35,7 @@ impl BVHNode {
         let (left, right) = Self::generate(src_objects);
         let bbox = Aabb::new_from_aabb(left.bounding_box(), right.bounding_box());
         // dbg!(&bbox);
-        Self {
-            left,
-            right,
-            bbox
-        }
+        Self { left, right, bbox }
     }
 
     fn generate(src_objects: Vec<Rc<dyn Hittable>>) -> (Rc<dyn Hittable>, Rc<dyn Hittable>) {
@@ -57,7 +52,7 @@ impl BVHNode {
             (node.clone(), node)
         } else if object_span == 2 {
             let node1: Rc<dyn Hittable> = objects[0].clone();
-            let node2: Rc<dyn Hittable> = objects[1].clone(); 
+            let node2: Rc<dyn Hittable> = objects[1].clone();
             if comparator(&node1, &node2) {
                 (node1.clone(), node2)
             } else {
