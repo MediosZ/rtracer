@@ -1,4 +1,4 @@
-use crate::{rand, rand_i32, Point3, Vec3};
+use crate::{rand_i32, Point3, Vec3};
 
 
 pub struct Perlin {
@@ -6,6 +6,12 @@ pub struct Perlin {
     perm_x: Vec<i32>,
     perm_y: Vec<i32>,
     perm_z: Vec<i32>,
+}
+
+impl Default for Perlin {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Perlin {
@@ -64,7 +70,7 @@ impl Perlin {
         p
     }
 
-    fn permute(p: &mut Vec<i32>, n: usize) {
+    fn permute(p: &mut [i32], n: usize) {
         for i in (1..n).rev() {
             let target = rand_i32(0, i as i32) as usize;
             p.swap(i, target);

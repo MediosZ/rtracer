@@ -71,7 +71,7 @@ impl Camera {
             center,
             sample_per_pixel,
             max_depth,
-            fov: fov,
+            fov,
             lookfrom,
             lookat,
             vup,
@@ -97,7 +97,7 @@ impl Camera {
                 let mut final_color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.sample_per_pixel {
                     let r = self.get_ray(i, j);
-                    let color = self.ray_color(&r, self.max_depth, &world);
+                    let color = self.ray_color(&r, self.max_depth, world);
                     final_color += color;
                 }
                 write_color(&final_color, self.sample_per_pixel);
@@ -130,7 +130,7 @@ impl Camera {
     }
 
     fn ray_color(&self, ray: &Ray, depth: usize, world: &HittableList) -> Color {
-        if depth <= 0 {
+        if depth == 0 {
             return Color::new(0.0, 0.0, 0.0);
         }
         if let Some(record) = world.hit(ray, &Interval::new(0.001, INF)) {

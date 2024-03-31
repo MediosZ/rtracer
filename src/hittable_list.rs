@@ -4,7 +4,11 @@ pub struct HittableList {
     objects: Vec<Rc<dyn Hittable>>,
     bbox: Aabb,
 }
-
+impl Default for HittableList {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl HittableList {
     pub fn new() -> Self {
         Self { objects: vec![], bbox: Aabb::default()}
@@ -29,9 +33,9 @@ impl HittableList {
     }
 }
 
-impl Into<Vec<Rc<dyn Hittable>>> for HittableList {
-    fn into(self) -> Vec<Rc<dyn Hittable>> {
-        self.objects
+impl From<HittableList> for Vec<Rc<dyn Hittable>> {
+    fn from(list: HittableList) -> Vec<Rc<dyn Hittable>> {
+        list.objects
     }
 }
 

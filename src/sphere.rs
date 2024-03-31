@@ -4,7 +4,7 @@ use std::rc::Rc;
 pub struct Sphere {
     center: Point3,
     radius: f64,
-    mat: Rc<Rc<dyn Material>>,
+    mat: Rc<dyn Material>,
     center_vec: Vec3,
     is_moving: bool,
     bbox: Aabb,
@@ -17,7 +17,7 @@ impl Sphere {
         Self {
             center,
             radius,
-            mat: Rc::new(mat),
+            mat,
             center_vec: Vec3::zero(),
             is_moving: false,
             bbox
@@ -37,7 +37,7 @@ impl Sphere {
         Self {
             center,
             radius,
-            mat: Rc::new(mat),
+            mat,
             center_vec: center2 - center,
             is_moving: true,
             bbox
@@ -81,7 +81,7 @@ impl Hittable for Sphere {
         let point = ray.at(t);
         let normal = (point - self.center) / self.radius;
         let (u, v) = self.get_uv(normal);
-        Some(HitRecord::new(&ray, point, normal, t, self.mat.clone(), u, v))
+        Some(HitRecord::new(ray, point, normal, t, self.mat.clone(), u, v))
     }
 
     fn bounding_box(&self) -> Aabb {

@@ -12,8 +12,7 @@ pub mod bvh;
 pub mod texture;
 pub mod image;
 pub mod perlin;
-pub const INF: f64 = std::f64::INFINITY;
-pub const PI: f64 = std::f64::consts::PI;
+pub mod quad;
 
 pub use camera::Camera;
 pub use color::{write_color, Color};
@@ -29,6 +28,12 @@ pub use bvh::BVHNode;
 pub use texture::{CheckerTexture, SolidColor, NoiseTexture, Texture};
 pub use image::Image;
 pub use perlin::Perlin;
+pub use quad::Quad;
+
+pub const INF: f64 = std::f64::INFINITY;
+pub const PI: f64 = std::f64::consts::PI;
+
+
 pub fn deg2rad(deg: f64) -> f64 {
     deg / 180.0 * PI
 }
